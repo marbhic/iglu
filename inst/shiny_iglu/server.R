@@ -22,7 +22,7 @@ shinyServer(function(input, output) {
 
   ############################# METRIC SECTION ######################################################
 
-#add metric based on the parameter it takes in
+  #add metric based on the parameter it takes in
   parameter_type <- reactive({
     #metric is considered as parameter type "none" if it only requires data as a parameter
     if(input$metric %in% c("adrr", "cv_glu", "ea1c", "gmi", "cv_measures", "grade", "gvp", "hbgi", "iqr_glu", "j_index", "lbgi", "mad_glu",
@@ -39,7 +39,7 @@ shinyServer(function(input, output) {
     }
     #metric is considered as parameter type "value" if it takes in data and a single value as parameters
     else if(input$metric %in% c("grade_hyper", "grade_hypo","m_value",
-                               "mage", "active_percent")){
+                                "mage", "active_percent")){
       return("value")
     }
     else if(input$metric %in% c("hyper_index", "hypo_index")){
@@ -61,7 +61,7 @@ shinyServer(function(input, output) {
       return("nested")
     }
   })
-#specify first parameter and the default values
+  #specify first parameter and the default values
   output$select_parameter <- renderUI({
     parameter_type = parameter_type()
 
@@ -329,7 +329,7 @@ shinyServer(function(input, output) {
     }
 
   })
-#reactive function
+  #reactive function
   metric_table <- reactive({
     parameter_type = parameter_type()
     data = transform_data()
@@ -735,6 +735,7 @@ shinyServer(function(input, output) {
     }
   })
 
+
   ### Get log boolean
 
   output$plot_log <- renderUI({
@@ -776,9 +777,17 @@ shinyServer(function(input, output) {
 
 
       data = transform_data()
-      string = paste('iglu::plot_glu(data = data, plottype = "tsplot", datatype = "all", lasagnatype = NULL, ',
-                     input$plot_TR, ', subjects = NULL, inter_gap = 45, tz = "", "blue-orange", log = ', input$plot_log, ')' ,sep = "")
-      eval(parse(text = string))
+      if (input$plot_plotly == 'no'){
+        string = paste('iglu::plot_glu(data = data, plottype = "tsplot", datatype = "all", lasagnatype = NULL, ',
+                       input$plot_TR, ', subjects = NULL, inter_gap = 45, tz = "", "blue-orange", log = ', input$plot_log, ')' ,sep = "")
+        eval(parse(text = string))
+      }
+      else if (input$plot_plotly == 'yes'){
+        string = paste('plotly::ggplotly(iglu::plot_glu(data = data, plottype = "tsplot", datatype = "all", lasagnatype = NULL, ',
+                       input$plot_TR, ', subjects = NULL, inter_gap = 45, tz = "", "blue-orange", log = ', input$plot_log, '))' ,sep = "")
+        eval(parse(text = string))
+      }
+
     }
     else if(plottype == "lasagnamulti"){
 
@@ -823,6 +832,11 @@ shinyServer(function(input, output) {
   })
 
   output$plot <- renderPlot({
+    req(input$plot_plotly == 'no')
+    plotFunc()
+  })
+  output$plotly<- plotly::renderPlotly({
+    req(input$plot_plotly == 'yes')
     plotFunc()
   })
 

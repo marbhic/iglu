@@ -1,4 +1,3 @@
-
 #library(shiny)
 #library(DT)
 
@@ -98,11 +97,22 @@ shinyUI(fluidPage(
                  uiOutput('plot_colorbar_help_text'),
                  uiOutput('plot_color_scheme'),
                  uiOutput('plot_log'),
+                 radioButtons('plot_plotly', 'Plotly - Interative Visualization',choices = c('yes','no')),
                  downloadButton(outputId = "pdfButton", label = "PDF"),
                  downloadButton(outputId = "pngButton", label = "PNG"),
                  downloadButton(outputId = "epsButton", label = "EPS")
                ),
-               mainPanel(plotOutput("plot"))
+               mainPanel(
+                 conditionalPanel(
+                   condition = "input.plot_plotly == 'yes'",
+                   plotly::plotlyOutput("plotly")
+                 ),
+                 conditionalPanel(
+                   condition = "input.plot_plotly == 'no'",
+                   plotOutput("plot")
+               )
+
+               )
              )),
 
     tabPanel("AGP", fluid = TRUE,
